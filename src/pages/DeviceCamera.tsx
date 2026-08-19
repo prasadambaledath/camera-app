@@ -42,7 +42,7 @@ export function DeviceCamera() {
   return (
     <>
       <p>
-        Device Camera opens the native camera on Android and iOS so you can capture a photo there.
+        Device Camera opens the native camera app so you can capture a photo there.
       </p>
 
       <section className="camera" aria-label="Device camera capture">
