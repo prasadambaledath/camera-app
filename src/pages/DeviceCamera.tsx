@@ -4,7 +4,6 @@ import { PhotoGallery, type CapturedImage } from '../components/PhotoGallery'
 export function DeviceCamera() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [images, setImages] = useState<CapturedImage[]>([])
-  const latest = images[0]
 
   const onFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -47,17 +46,6 @@ export function DeviceCamera() {
       </p>
 
       <section className="camera" aria-label="Device camera capture">
-        <div className="camera__stage">
-          {latest ? (
-            <img className="camera__preview" src={latest.url} alt="Latest captured photo" />
-          ) : (
-            <div className="camera__placeholder">
-              <p>Ready to capture</p>
-              <span>Tap Take photo to open your phone’s camera app.</span>
-            </div>
-          )}
-        </div>
-
         <div className="camera__actions">
           <button
             type="button"
