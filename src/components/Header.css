@@ -58,8 +58,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  background: #f3f3f3;
   color: var(--text-h);
   padding: 8px 12px;
   font: inherit;
@@ -70,9 +69,8 @@
 }
 
 .header__link--active {
-  background: #643c82;
-  border-color: transparent;
-  color: #fff;
+  background: #efdbff;
+  color: #643c82;
 }
 
 @media (max-width: 1024px) {
