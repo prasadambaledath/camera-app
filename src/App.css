@@ -1,0 +1,172 @@
+.app {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+}
+
+.app__main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.app__lede {
+  max-width: 42ch;
+}
+
+.app__error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: #8a1f1f;
+  background: #fff1f1;
+  border: 1px solid #f3c0c0;
+}
+
+.camera {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.camera__stage {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  background: #0f0d14;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.camera__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.camera__stage--live .camera__video {
+  display: block;
+}
+
+.camera__preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera__placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  padding: 24px;
+  text-align: center;
+  color: #d7d3df;
+}
+
+.camera__placeholder p {
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+}
+
+.camera__placeholder span {
+  font-size: 15px;
+  line-height: 140%;
+}
+
+.camera__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.camera__file {
+  display: none;
+}
+
+.button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  border-radius: 999px;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.gallery__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.gallery__heading span {
+  font-size: 14px;
+}
+
+.gallery__empty {
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: var(--social-bg);
+}
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery__item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gallery__item img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+}
+
+.gallery__remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .camera__stage {
+    aspect-ratio: 4 / 3;
+  }
+
+  .gallery__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
