@@ -146,7 +146,7 @@ export function InAppCamera() {
             </>
           ) : (
             <button type="button" className="button button--primary" onClick={() => void startCamera()}>
-              Start camera
+              Capture Photo
             </button>
           )}
         </div>

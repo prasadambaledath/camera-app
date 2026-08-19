@@ -12,8 +12,7 @@ export function Header() {
           </svg>
         </span>
         <div>
-          <p className="header__eyebrow">Camera Check</p>
-          <h1 className="header__title">Capture a photo</h1>
+          <strong className="header__eyebrow">Camera App</strong>
         </div>
       </div>
 

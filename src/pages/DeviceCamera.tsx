@@ -52,7 +52,7 @@ export function DeviceCamera() {
             className="button button--primary"
             onClick={() => fileInputRef.current?.click()}
           >
-            Take photo
+            Capture Photo
           </button>
         </div>
 
