@@ -138,7 +138,7 @@ export function InAppCamera() {
                 Capture
               </button>
               <button type="button" className="button" onClick={switchCamera}>
-                Switch Camera
+                Flip Camera
               </button>
               <button type="button" className="button" onClick={stopCamera}>
                 Cancel
