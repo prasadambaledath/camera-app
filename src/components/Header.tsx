@@ -28,7 +28,7 @@ export function Header() {
           to="/in-app"
           className={({ isActive }) => `header__link${isActive ? ' header__link--active' : ''}`}
         >
-          In-App camera
+          In-App Camera
         </NavLink>
       </nav>
     </header>

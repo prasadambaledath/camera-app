@@ -109,7 +109,7 @@ export function InAppCamera() {
 
   return (
     <>
-      <p className="app__lede">
+      <p>
         In-App camera opens a live preview in the page so you can capture a photo without leaving the browser.
       </p>
 
@@ -138,10 +138,10 @@ export function InAppCamera() {
                 Capture
               </button>
               <button type="button" className="button" onClick={switchCamera}>
-                Flip camera
+                Switch Camera
               </button>
               <button type="button" className="button" onClick={stopCamera}>
-                Stop
+                Cancel
               </button>
             </>
           ) : (

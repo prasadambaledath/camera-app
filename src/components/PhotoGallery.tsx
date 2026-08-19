@@ -28,7 +28,7 @@ export function PhotoGallery({ images, onRemove }: PhotoGalleryProps) {
                 className="gallery__remove"
                 onClick={() => onRemove(image.id)}
               >
-                Remove
+                Delete
               </button>
             </li>
           ))}

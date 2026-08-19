@@ -10,10 +10,6 @@
   gap: 28px;
 }
 
-.app__lede {
-  max-width: 42ch;
-}
-
 .app__error {
   margin: 0;
   padding: 12px 14px;
@@ -152,12 +148,10 @@
 .gallery__remove {
   appearance: none;
   border: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  padding: 0;
-  text-align: left;
+  color: #fff;
+  background: #d73f3f;
+  border-radius: 5px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 

@@ -41,7 +41,7 @@ export function DeviceCamera() {
 
   return (
     <>
-      <p className="app__lede">
+      <p>
         Device Camera opens the native camera on Android and iOS so you can capture a photo there.
       </p>
 
