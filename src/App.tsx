@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Header } from './components/Header'
 import { MemoryLoadPanel } from './components/MemoryLoadPanel'
-import { MemoryLoadProvider } from './memory/MemoryLoadContext'
+import { MemoryLoadProvider } from './memory/MemoryLoadProvider'
 import { DeviceCamera } from './pages/DeviceCamera'
 import { InAppCamera } from './pages/InAppCamera'
 import './App.css'

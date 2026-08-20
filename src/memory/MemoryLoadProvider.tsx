@@ -1,17 +1,8 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   applyBallast,
   BALLAST_PRESETS,
   readHeap,
-  releaseBallast,
   type BallastStats,
   type HeapSample,
   type LoadLevel,
@@ -24,24 +15,7 @@ import {
   type CameraMode,
   type ExperimentSnapshot,
 } from './experiment'
-
-type MemoryLoadContextValue = {
-  level: LoadLevel
-  applying: boolean
-  progress: string | null
-  error: string | null
-  stats: BallastStats | null
-  formRows: number
-  heap: HeapSample | null
-  reloadNotice: ExperimentSnapshot | null
-  setLevel: (level: LoadLevel) => void
-  markHandoff: (mode: CameraMode) => void
-  clearHandoff: () => void
-  dismissReloadNotice: () => void
-  copyExperimentLog: () => Promise<void>
-}
-
-const MemoryLoadContext = createContext<MemoryLoadContextValue | null>(null)
+import { MemoryLoadContext, type MemoryLoadContextValue } from './MemoryLoadContext'
 
 export function MemoryLoadProvider({ children }: { children: ReactNode }) {
   const [level, setLevelState] = useState<LoadLevel>('off')
@@ -50,11 +24,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [stats, setStats] = useState<BallastStats | null>(null)
   const [heap, setHeap] = useState<HeapSample | null>(() => readHeap())
-  const [reloadNotice, setReloadNotice] = useState<ExperimentSnapshot | null>(null)
-
-  useEffect(() => {
-    setReloadNotice(wasReloadedAfterHandoff())
-  }, [])
+  const [reloadNotice, setReloadNotice] = useState<ExperimentSnapshot | null>(() => wasReloadedAfterHandoff())
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -63,16 +33,11 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    return () => {
-      releaseBallast()
-    }
-  }, [])
-
   const setLevel = useCallback(async (nextLevel: LoadLevel) => {
     setApplying(true)
     setError(null)
-    setProgress(nextLevel === 'off' ? 'Releasing memory load…' : `Applying ${BALLAST_PRESETS[nextLevel].label}…`)
+    setStats({ photoCount: 0, formRows: 0, jpegBytes: 0, dataUrlChars: 0, dataUrls: [] })
+    setProgress(nextLevel === 'off' ? 'Released in-memory photos' : `Applying ${BALLAST_PRESETS[nextLevel].label}…`)
 
     try {
       const nextStats = await applyBallast(nextLevel, setProgress)
@@ -81,9 +46,8 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
       setHeap(readHeap())
       setProgress(null)
     } catch (err) {
-      releaseBallast()
       setLevelState('off')
-      setStats({ buffersMB: 0, photoCount: 0, bitmapCount: 0, formRows: 0 })
+      setStats({ photoCount: 0, formRows: 0, jpegBytes: 0, dataUrlChars: 0, dataUrls: [] })
       setError(
         err instanceof Error
           ? err.message
@@ -134,6 +98,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
     error,
     stats,
     formRows: stats?.formRows ?? 0,
+    dataUrls: stats?.dataUrls ?? [],
     heap,
     reloadNotice,
     setLevel: (nextLevel) => {
@@ -163,12 +128,4 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
       {children}
     </MemoryLoadContext.Provider>
   )
-}
-
-export function useMemoryLoad() {
-  const context = useContext(MemoryLoadContext)
-  if (!context) {
-    throw new Error('useMemoryLoad must be used within MemoryLoadProvider')
-  }
-  return context
 }

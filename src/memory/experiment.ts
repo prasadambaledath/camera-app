@@ -80,7 +80,7 @@ export function formatExperimentLog(
     `device: ${snapshot.userAgent}`,
     `chrome-memory: ${heap ? `${heap.usedMB} / ${heap.limitMB} MB` : 'unavailable'}`,
     `mode: ${snapshot.mode === 'device' ? 'Device Camera' : 'In-App Camera'}`,
-    `load: ${preset.label} (${preset.buffersMB} MB buffers, ${preset.photoCount} photos, ${preset.formRows} form rows)`,
+    `load: ${preset.label} (${preset.photoCount} JPEG data URLs in state, ${preset.formRows} form rows)`,
     `heap-at-start: ${snapshot.heapUsedMB ?? 'n/a'} MB / ${snapshot.heapLimitMB ?? 'n/a'} MB`,
     `pwa-installed: ${isStandalone() ? 'Y' : 'N'}`,
   ]

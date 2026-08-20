@@ -1,4 +1,4 @@
-import { BALLAST_PRESETS, LOAD_LEVELS } from '../memory/ballast'
+import { BALLAST_PRESETS, dataUrlHeapMB, LOAD_LEVELS } from '../memory/ballast'
 import { useMemoryLoad } from '../memory/MemoryLoadContext'
 import './MemoryLoadPanel.css'
 
@@ -10,6 +10,7 @@ export function MemoryLoadPanel() {
     error,
     stats,
     formRows,
+    dataUrls,
     heap,
     reloadNotice,
     setLevel,
@@ -17,7 +18,8 @@ export function MemoryLoadPanel() {
     copyExperimentLog,
   } = useMemoryLoad()
 
-  const preset = BALLAST_PRESETS[level]
+  const jpegMB = stats ? Math.round((stats.jpegBytes / (1024 * 1024)) * 10) / 10 : 0
+  const stringHeapMB = stats ? dataUrlHeapMB(stats.dataUrlChars) : 0
 
   return (
     <section className="memory" aria-label="Memory load">
@@ -49,7 +51,7 @@ export function MemoryLoadPanel() {
         </button>
       </div>
 
-      <div className="memory__levels" role="group" aria-label="Heap ballast">
+      <div className="memory__levels" role="group" aria-label="In-memory photos">
         {LOAD_LEVELS.map((nextLevel) => (
           <button
             key={nextLevel}
@@ -59,6 +61,9 @@ export function MemoryLoadPanel() {
             onClick={() => setLevel(nextLevel)}
           >
             {BALLAST_PRESETS[nextLevel].label}
+            {nextLevel !== 'off' && (
+              <span className="memory__level-meta">{BALLAST_PRESETS[nextLevel].photoCount} photos</span>
+            )}
           </button>
         ))}
       </div>
@@ -67,10 +72,8 @@ export function MemoryLoadPanel() {
         {applying
           ? progress
           : level === 'off'
-            ? 'Load is off. The page stays light.'
-            : `Holding ${preset.buffersMB} MB buffers, ${stats?.photoCount ?? 0} JPEG data URLs${
-                stats?.bitmapCount ? `, ${stats.bitmapCount} ImageBitmaps` : ''
-              }, and ${formRows} form rows.`}
+            ? 'Load is off. No extra photos in memory.'
+            : `Holding ${stats?.photoCount ?? 0} JPEG data URLs (~${jpegMB} MB binary, ~${stringHeapMB} MB as JS strings) and ${formRows} checklist fields.`}
         {heap
           ? ` Heap ${heap.usedMB} / ${heap.limitMB} MB.`
           : ' Heap stats need Chrome.'}
@@ -78,13 +81,29 @@ export function MemoryLoadPanel() {
 
       {error && <p className="app__error" role="alert">{error}</p>}
 
+      {dataUrls.length > 0 && (
+        <details className="memory__form">
+          <summary>In-memory UDF photos ({dataUrls.length} in React state)</summary>
+          <ul className="memory__thumbs">
+            {dataUrls.map((url, index) => (
+              <li key={`${index}-${url.slice(-24)}`}>
+                <img src={url} alt={`Ballast photo ${index + 1}`} />
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       {formRows > 0 && (
         <details className="memory__form">
-          <summary>Fake form ballast ({formRows} rows)</summary>
+          <summary>Fake checklist form ({formRows} fields)</summary>
+          <p className="memory__form-note">
+            Decent dropdowns/inputs like Test Checklist / UDF — not what usually kills Chrome.
+          </p>
           <div className="memory__form-grid">
             {Array.from({ length: formRows }, (_, index) => (
               <label key={index} className="memory__field">
-                Field {index + 1}
+                UDF field {index + 1}
                 <input defaultValue={`Checklist item ${index + 1}`} readOnly />
               </label>
             ))}

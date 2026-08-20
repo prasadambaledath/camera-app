@@ -2,43 +2,31 @@ export type LoadLevel = 'off' | 'low' | 'medium' | 'high'
 
 export type BallastPreset = {
   label: string
-  buffersMB: number
   photoCount: number
   formRows: number
-  useBitmaps: boolean
 }
 
 export const LOAD_LEVELS: LoadLevel[] = ['off', 'low', 'medium', 'high']
 
+/** Realistic checklist/UDF pile-up: a handful of ~1–2MB JPEG data URLs, plus a modest form. */
 export const BALLAST_PRESETS: Record<LoadLevel, BallastPreset> = {
-  off: { label: 'Off', buffersMB: 0, photoCount: 0, formRows: 0, useBitmaps: false },
-  low: { label: 'Low', buffersMB: 24, photoCount: 6, formRows: 24, useBitmaps: false },
-  medium: { label: 'Med', buffersMB: 80, photoCount: 20, formRows: 80, useBitmaps: false },
-  high: { label: 'High', buffersMB: 220, photoCount: 40, formRows: 180, useBitmaps: true },
+  off: { label: 'Off', photoCount: 0, formRows: 0 },
+  low: { label: 'Low', photoCount: 5, formRows: 6 },
+  medium: { label: 'Med', photoCount: 12, formRows: 12 },
+  high: { label: 'High', photoCount: 20, formRows: 18 },
 }
 
-const PAGE_SIZE = 4096
-const CHUNK_MB = 8
-const PHOTO_WIDTH = 1600
-const PHOTO_HEIGHT = 1200
-
-type RetainedBallast = {
-  buffers: Uint8Array[]
-  dataUrls: string[]
-  bitmaps: ImageBitmap[]
-}
-
-const retained: RetainedBallast = {
-  buffers: [],
-  dataUrls: [],
-  bitmaps: [],
-}
+const TARGET_JPEG_BYTES = 1.5 * 1024 * 1024
+const PHOTO_WIDTH = 1920
+const PHOTO_HEIGHT = 1440
+const JPEG_QUALITY = 0.92
 
 export type BallastStats = {
-  buffersMB: number
   photoCount: number
-  bitmapCount: number
   formRows: number
+  jpegBytes: number
+  dataUrlChars: number
+  dataUrls: string[]
 }
 
 export type HeapSample = {
@@ -70,12 +58,9 @@ export function readHeap(): HeapSample | null {
   }
 }
 
-function allocateCommittedBuffer(bytes: number): Uint8Array {
-  const buffer = new Uint8Array(bytes)
-  for (let offset = 0; offset < buffer.length; offset += PAGE_SIZE) {
-    buffer[offset] = 1
-  }
-  return buffer
+export function dataUrlHeapMB(dataUrlChars: number): number {
+  // JS strings are UTF-16, so a base64 data URL costs ~2 bytes per character on the heap.
+  return bytesToMB(dataUrlChars * 2)
 }
 
 function yieldToUi(): Promise<void> {
@@ -84,18 +69,9 @@ function yieldToUi(): Promise<void> {
   })
 }
 
-async function makeFieldPhoto(useBitmap: boolean): Promise<{ dataUrl: string; bitmap?: ImageBitmap }> {
-  const canvas = document.createElement('canvas')
-  canvas.width = PHOTO_WIDTH
-  canvas.height = PHOTO_HEIGHT
-  const context = canvas.getContext('2d', { willReadFrequently: true })
-  if (!context) {
-    throw new Error('Could not create canvas context for ballast photos.')
-  }
-
-  const imageData = context.createImageData(PHOTO_WIDTH, PHOTO_HEIGHT)
+function fillNoise(context: CanvasRenderingContext2D, width: number, height: number, seed: number): void {
+  const imageData = context.createImageData(width, height)
   const pixels = imageData.data
-  const seed = Math.floor(Math.random() * 255)
   for (let index = 0; index < pixels.length; index += 4) {
     pixels[index] = (index + seed) & 255
     pixels[index + 1] = (index * 3 + seed) & 255
@@ -103,21 +79,19 @@ async function makeFieldPhoto(useBitmap: boolean): Promise<{ dataUrl: string; bi
     pixels[index + 3] = 255
   }
   context.putImageData(imageData, 0, 0)
+}
 
-  const blob = await new Promise<Blob>((resolve, reject) => {
+async function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+  return new Promise((resolve, reject) => {
     canvas.toBlob(
-      (nextBlob) => {
-        if (nextBlob) resolve(nextBlob)
+      (blob) => {
+        if (blob) resolve(blob)
         else reject(new Error('Could not encode ballast photo.'))
       },
       'image/jpeg',
-      0.92,
+      quality,
     )
   })
-
-  const dataUrl = await blobToDataUrl(blob)
-  const bitmap = useBitmap ? await createImageBitmap(blob) : undefined
-  return { dataUrl, bitmap }
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -129,11 +103,27 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   })
 }
 
-export function releaseBallast(): void {
-  retained.bitmaps.forEach((bitmap) => bitmap.close())
-  retained.buffers = []
-  retained.dataUrls = []
-  retained.bitmaps = []
+async function makeFieldPhoto(index: number): Promise<{ dataUrl: string; jpegBytes: number }> {
+  const canvas = document.createElement('canvas')
+  canvas.width = PHOTO_WIDTH
+  canvas.height = PHOTO_HEIGHT
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) {
+    throw new Error('Could not create canvas context for ballast photos.')
+  }
+
+  fillNoise(context, PHOTO_WIDTH, PHOTO_HEIGHT, (index + 1) * 97)
+  let quality = JPEG_QUALITY
+  let blob = await canvasToJpeg(canvas, quality)
+
+  // Noisy field-photo sized JPEGs should land near 1–2MB. Nudge quality if this device encodes small.
+  if (blob.size < 1024 * 1024 && quality < 0.98) {
+    quality = 0.98
+    blob = await canvasToJpeg(canvas, quality)
+  }
+
+  const dataUrl = await blobToDataUrl(blob)
+  return { dataUrl, jpegBytes: blob.size }
 }
 
 export async function applyBallast(
@@ -141,43 +131,30 @@ export async function applyBallast(
   onProgress?: (message: string) => void,
 ): Promise<BallastStats> {
   const preset = BALLAST_PRESETS[level]
-  releaseBallast()
 
   if (level === 'off') {
-    onProgress?.('Released memory load')
-    return { buffersMB: 0, photoCount: 0, bitmapCount: 0, formRows: 0 }
+    onProgress?.('Released in-memory photos')
+    return { photoCount: 0, formRows: 0, jpegBytes: 0, dataUrlChars: 0, dataUrls: [] }
   }
 
-  const chunkBytes = CHUNK_MB * 1024 * 1024
-  const remainingBytes = preset.buffersMB * 1024 * 1024
-  let allocated = 0
-
-  while (allocated < remainingBytes) {
-    const nextBytes = Math.min(chunkBytes, remainingBytes - allocated)
-    retained.buffers.push(allocateCommittedBuffer(nextBytes))
-    allocated += nextBytes
-    onProgress?.(`Allocating buffers… ${bytesToMB(allocated)} / ${preset.buffersMB} MB`)
-    await yieldToUi()
-  }
+  const dataUrls: string[] = []
+  let jpegBytes = 0
+  let dataUrlChars = 0
 
   for (let index = 0; index < preset.photoCount; index += 1) {
-    const photo = await makeFieldPhoto(preset.useBitmaps)
-    retained.dataUrls.push(photo.dataUrl)
-    if (photo.bitmap) {
-      retained.bitmaps.push(photo.bitmap)
-    }
-    onProgress?.(`Keeping photos in memory… ${index + 1} / ${preset.photoCount}`)
+    onProgress?.(`Encoding UDF-style JPEG ${index + 1} / ${preset.photoCount} (~${bytesToMB(TARGET_JPEG_BYTES)} MB each)`)
+    const photo = await makeFieldPhoto(index)
+    dataUrls.push(photo.dataUrl)
+    jpegBytes += photo.jpegBytes
+    dataUrlChars += photo.dataUrl.length
     await yieldToUi()
   }
 
   return {
-    buffersMB: preset.buffersMB,
-    photoCount: retained.dataUrls.length,
-    bitmapCount: retained.bitmaps.length,
+    photoCount: dataUrls.length,
     formRows: preset.formRows,
+    jpegBytes,
+    dataUrlChars,
+    dataUrls,
   }
-}
-
-export function getRetainedDataUrls(): string[] {
-  return retained.dataUrls
 }
