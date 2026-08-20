@@ -39,10 +39,7 @@ export function MemoryLoadPanel() {
 
       <div className="memory__heading">
         <div>
-          <h2>Memory load</h2>
-          <p>
-            Fake iTrac weight before opening the camera. Keep this applied, then use Device Camera.
-          </p>
+          <h2>Fake memory load</h2>
         </div>
         <button
           type="button"
