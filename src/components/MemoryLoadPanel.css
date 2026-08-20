@@ -108,6 +108,7 @@
 }
 
 .memory__form {
+  display: none; /* temporarily hidden for now */
   border-top: 1px dashed var(--border);
   padding-top: 8px;
 }
