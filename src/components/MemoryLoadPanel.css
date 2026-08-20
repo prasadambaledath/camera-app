@@ -69,6 +69,7 @@
 }
 
 .memory__level-meta {
+  display: none; /* temporarily hidden for now */
   font-size: 11px;
   color: var(--text);
 }
