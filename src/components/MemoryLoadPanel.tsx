@@ -38,9 +38,7 @@ export function MemoryLoadPanel() {
       )}
 
       <div className="memory__heading">
-        <div>
-          <h2>Fake memory load</h2>
-        </div>
+        <h4>Fake memory load</h4>
         <button
           type="button"
           className="button"
