@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { Header } from './components/Header'
+import { MemoryLoadPanel } from './components/MemoryLoadPanel'
+import { MemoryLoadProvider } from './memory/MemoryLoadContext'
 import { DeviceCamera } from './pages/DeviceCamera'
 import { InAppCamera } from './pages/InAppCamera'
 import './App.css'
@@ -7,16 +9,19 @@ import './App.css'
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <div className="app">
-        <Header />
-        <main className="app__main">
-          <Routes>
-            <Route path="/" element={<DeviceCamera />} />
-            <Route path="/in-app" element={<InAppCamera />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+      <MemoryLoadProvider>
+        <div className="app">
+          <Header />
+          <main className="app__main">
+            <MemoryLoadPanel />
+            <Routes>
+              <Route path="/" element={<DeviceCamera />} />
+              <Route path="/in-app" element={<InAppCamera />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
+        </div>
+      </MemoryLoadProvider>
     </BrowserRouter>
   )
 }

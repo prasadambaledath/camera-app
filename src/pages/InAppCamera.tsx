@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { PhotoGallery, type CapturedImage } from '../components/PhotoGallery'
+import { useMemoryLoad } from '../memory/MemoryLoadContext'
 
 type FacingMode = 'user' | 'environment'
 
@@ -12,6 +13,7 @@ export function InAppCamera() {
   const [facingMode, setFacingMode] = useState<FacingMode>('environment')
   const [error, setError] = useState<string | null>(null)
   const [images, setImages] = useState<CapturedImage[]>([])
+  const { markHandoff } = useMemoryLoad()
 
   const stopCamera = () => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -23,6 +25,9 @@ export function InAppCamera() {
   }
 
   const startCamera = async (nextFacing: FacingMode = facingMode) => {
+    if (!isCameraOn) {
+      markHandoff('in-app')
+    }
     setError(null)
 
     if (!navigator.mediaDevices?.getUserMedia) {

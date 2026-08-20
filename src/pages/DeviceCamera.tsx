@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { PhotoGallery, type CapturedImage } from '../components/PhotoGallery'
+import { useMemoryLoad } from '../memory/MemoryLoadContext'
 
 export function DeviceCamera() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [images, setImages] = useState<CapturedImage[]>([])
+  const { markHandoff, clearHandoff } = useMemoryLoad()
 
   const onFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -14,6 +16,7 @@ export function DeviceCamera() {
       url: URL.createObjectURL(file),
     }))
     setImages((current) => [...nextImages, ...current])
+    clearHandoff()
     event.target.value = ''
   }
 
@@ -50,7 +53,10 @@ export function DeviceCamera() {
           <button
             type="button"
             className="button button--primary"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              markHandoff('device')
+              fileInputRef.current?.click()
+            }}
           >
             Capture Photo
           </button>

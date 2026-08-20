@@ -1,17 +1,57 @@
 # Camera App
 
-A small demo for comparing how photo capture behaves across devices and browsers.
+A demo for comparing how photo capture behaves across devices and browsers — and for reproducing a field OOM we saw in iTrac.
 
-Use it to check native camera handoff versus an in-page live preview — permissions, facing mode, and what actually comes back after capture.
-
+**Incident:** [ALP-2004 / INC-1776649](https://linear.app/convergint/issue/ALP-2004/inc-1776649)  
 **Live demo:** [prasadambaledath.github.io/camera-app](https://prasadambaledath.github.io/camera-app/)
+
+iTrac ([itrac-client](https://github.com/convergint/itrac-client)) can reload the tab with “Unable to complete previous operation due to low memory” after native camera handoff. This app started as a light Vite/React page so we could isolate whether the **camera API** was broken, or whether Chrome was reclaiming a **heavy backgrounded tab**.
+
+The light app stays up. Next we add iTrac-like weight **one variable at a time**.
 
 ## Capture modes
 
-- **Device Camera** — Opens the phone’s native camera app through a file input (`accept="image/*"` + `capture="environment"`). After you take a photo, the image is returned to the page.
-- **In-App Camera** — Starts a live preview in the browser with `getUserMedia`. You can capture a frame, flip between rear and front cameras, or cancel without leaving the page.
+- **Device Camera** — Opens the phone’s native camera (`<input capture="environment">`). The browser tab is backgrounded while the OS camera runs. This is the iTrac kill path.
+- **In-App Camera** — Live preview with `getUserMedia`. The tab stays in the foreground.
 
-Captured photos appear in a session gallery and can be deleted. Nothing is uploaded or stored after you leave the page.
+Captured photos stay in a session gallery only. Nothing is uploaded.
+
+## Memory load (current experiment)
+
+The page can hold fake iTrac weight before you open the camera:
+
+| Level | Buffers | In-memory photos | Fake form rows |
+| --- | --- | --- | --- |
+| Off | — | — | — |
+| Low | 24 MB | 6 JPEG data URLs | 24 |
+| Medium | 80 MB | 20 JPEG data URLs | 80 |
+| High | 220 MB | 40 JPEG data URLs + ImageBitmaps | 180 |
+
+Load stays applied when you switch Device Camera ↔ In-App Camera. Chrome heap is shown when `performance.memory` is available.
+
+If Chrome kills the tab during native handoff, the next load shows a **reload** banner (pending handoff + navigation type `reload`).
+
+### Test matrix (same Samsung / Chrome)
+
+1. Load = Off → Device Camera  
+2. Load = High → Device Camera  
+3. Load = High → In-App Camera  
+
+If (2) reloads and (3) does not, that confirms: native camera backgrounds a heavy tab, then Chrome reclaims memory. The camera API itself is not the bug.
+
+Change **one** thing per build. Use **Copy log** after each trial (device, heap, mode, load, PWA Y/N, reload Y/N).
+
+## What we are not adding yet
+
+PWA / service worker is later. It is useful for installed vs browser-tab, but it is the wrong first variable on this small app.
+
+| Order | Add | Why |
+| --- | --- | --- |
+| 1 | **Memory ballast + in-memory photos** | Closest to a heavy iTrac tab — **this is in** |
+| 2 | iTrac-like resize (`canvas` / `toBlob` quality loop) | Capture-time memory spike |
+| 3 | PWA + service worker (installed vs tab) | How field techs often run iTrac |
+| 4 | IndexedDB drafts | Crash-restore path |
+| 5 | Analytics / session replay (optional) | Extra background cost |
 
 ## Run locally
 
@@ -20,13 +60,16 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually `http://localhost:5173`). Localhost counts as a secure context, so in-app camera should work there.
+Then open the URL Vite prints (usually `http://localhost:5173`). Localhost is a secure context, so in-app camera should work.
 
 ```bash
 npm run build    # production build
 npm run preview  # serve the built app
 npm run lint     # ESLint
 ```
+
+Pushes to `main` deploy `dist/` to GitHub Pages. Production base path is `/camera-app/`.
+
 ## Stack
 
-React, TypeScript, Vite, and React Router. No backend — images stay in memory as object URLs or data URLs for the current session.
+React, TypeScript, Vite, and React Router. No backend. Experiment ballast is held in module-level typed arrays, JPEG data URLs, and optional ImageBitmaps so it is not garbage-collected when you switch routes.
