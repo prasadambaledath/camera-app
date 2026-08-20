@@ -13,7 +13,7 @@ export const LOAD_LEVELS: LoadLevel[] = ['off', 'low', 'medium', 'high']
 export const BALLAST_PRESETS: Record<LoadLevel, BallastPreset> = {
   off: { label: 'Off', buffersMB: 0, photoCount: 0, formRows: 0, useBitmaps: false },
   low: { label: 'Low', buffersMB: 24, photoCount: 6, formRows: 24, useBitmaps: false },
-  medium: { label: 'Medium', buffersMB: 80, photoCount: 20, formRows: 80, useBitmaps: false },
+  medium: { label: 'Med', buffersMB: 80, photoCount: 20, formRows: 80, useBitmaps: false },
   high: { label: 'High', buffersMB: 220, photoCount: 40, formRows: 180, useBitmaps: true },
 }
 

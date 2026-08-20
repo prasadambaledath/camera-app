@@ -41,7 +41,6 @@ export function MemoryLoadPanel() {
         <h4>Fake memory load</h4>
         <button
           type="button"
-          className="button"
           onClick={() => {
             void copyExperimentLog()
           }}
