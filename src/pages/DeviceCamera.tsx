@@ -67,8 +67,6 @@ export function DeviceCamera() {
     <>
       <p>
         Device Camera opens the native camera app so you can capture a photo there.
-        After the file returns, iTrac resize runs the same canvas / quality-loop / base64 path as{' '}
-        <code>processFile()</code>.
       </p>
 
       <section className="camera" aria-label="Device camera capture">
