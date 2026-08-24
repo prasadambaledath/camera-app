@@ -5,6 +5,7 @@ export type CameraMode = 'device' | 'in-app'
 export type ExperimentSnapshot = {
   loadLevel: LoadLevel
   mode: CameraMode
+  resizeEnabled: boolean
   heapUsedMB: number | null
   heapLimitMB: number | null
   startedAt: number
@@ -33,11 +34,16 @@ export function writeExperiment(snapshot: ExperimentSnapshot): void {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot))
 }
 
-export function markHandoff(loadLevel: LoadLevel, mode: CameraMode): ExperimentSnapshot {
+export function markHandoff(
+  loadLevel: LoadLevel,
+  mode: CameraMode,
+  resizeEnabled: boolean,
+): ExperimentSnapshot {
   const heap = readHeap()
   const snapshot: ExperimentSnapshot = {
     loadLevel,
     mode,
+    resizeEnabled,
     heapUsedMB: heap?.usedMB ?? null,
     heapLimitMB: heap?.limitMB ?? null,
     startedAt: Date.now(),
@@ -69,7 +75,10 @@ export function wasReloadedAfterHandoff(): ExperimentSnapshot | null {
 }
 
 export function formatExperimentLog(
-  snapshot: Pick<ExperimentSnapshot, 'loadLevel' | 'mode' | 'heapUsedMB' | 'heapLimitMB' | 'userAgent'> & {
+  snapshot: Pick<
+    ExperimentSnapshot,
+    'loadLevel' | 'mode' | 'resizeEnabled' | 'heapUsedMB' | 'heapLimitMB' | 'userAgent'
+  > & {
     reload?: boolean
   },
   includeReload: boolean,
@@ -81,6 +90,7 @@ export function formatExperimentLog(
     `chrome-memory: ${heap ? `${heap.usedMB} / ${heap.limitMB} MB` : 'unavailable'}`,
     `mode: ${snapshot.mode === 'device' ? 'Device Camera' : 'In-App Camera'}`,
     `load: ${preset.label} (${preset.photoCount} JPEG data URLs in state, ${preset.formRows} form rows)`,
+    `itrac-resize: ${snapshot.resizeEnabled ? 'Y' : 'N'}`,
     `heap-at-start: ${snapshot.heapUsedMB ?? 'n/a'} MB / ${snapshot.heapLimitMB ?? 'n/a'} MB`,
     `pwa-installed: ${isStandalone() ? 'Y' : 'N'}`,
   ]

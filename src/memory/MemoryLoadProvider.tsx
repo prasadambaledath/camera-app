@@ -25,6 +25,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
   const [stats, setStats] = useState<BallastStats | null>(null)
   const [heap, setHeap] = useState<HeapSample | null>(() => readHeap())
   const [reloadNotice, setReloadNotice] = useState<ExperimentSnapshot | null>(() => wasReloadedAfterHandoff())
+  const [resizeEnabled, setResizeEnabled] = useState(true)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -60,8 +61,8 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const markHandoff = useCallback((mode: CameraMode) => {
-    persistHandoff(level, mode)
-  }, [level])
+    persistHandoff(level, mode, resizeEnabled)
+  }, [level, resizeEnabled])
 
   const clearHandoff = useCallback(() => {
     clearPendingHandoff()
@@ -77,6 +78,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
       {
         loadLevel: level,
         mode: reloadNotice?.mode ?? 'device',
+        resizeEnabled: reloadNotice?.resizeEnabled ?? resizeEnabled,
         heapUsedMB: heapNow?.usedMB ?? null,
         heapLimitMB: heapNow?.limitMB ?? null,
         userAgent: navigator.userAgent,
@@ -89,7 +91,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
     } catch {
       console.info('[camera-app] experiment log\n', text)
     }
-  }, [level, reloadNotice])
+  }, [level, reloadNotice, resizeEnabled])
 
   const value = useMemo<MemoryLoadContextValue>(() => ({
     level,
@@ -101,9 +103,11 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
     dataUrls: stats?.dataUrls ?? [],
     heap,
     reloadNotice,
+    resizeEnabled,
     setLevel: (nextLevel) => {
       void setLevel(nextLevel)
     },
+    setResizeEnabled,
     markHandoff,
     clearHandoff,
     dismissReloadNotice,
@@ -119,6 +123,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
     markHandoff,
     progress,
     reloadNotice,
+    resizeEnabled,
     setLevel,
     stats,
   ])

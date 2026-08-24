@@ -1,23 +1,44 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { PhotoGallery, type CapturedImage } from '../components/PhotoGallery'
+import { processCapturedFile } from '../image/processFile'
 import { useMemoryLoad } from '../memory/MemoryLoadContext'
 
 export function DeviceCamera() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [images, setImages] = useState<CapturedImage[]>([])
-  const { markHandoff, clearHandoff } = useMemoryLoad()
+  const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { markHandoff, clearHandoff, resizeEnabled, setResizeEnabled } = useMemoryLoad()
 
-  const onFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files?.length) return
-
-    const nextImages = Array.from(files).map((file) => ({
-      id: crypto.randomUUID(),
-      url: URL.createObjectURL(file),
-    }))
-    setImages((current) => [...nextImages, ...current])
-    clearHandoff()
+  const onFileSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
     event.target.value = ''
+    if (!file) return
+
+    setError(null)
+
+    if (!resizeEnabled) {
+      setImages((current) => [
+        { id: crypto.randomUUID(), url: URL.createObjectURL(file) },
+        ...current,
+      ])
+      clearHandoff()
+      return
+    }
+
+    setProcessing(true)
+    try {
+      const processed = await processCapturedFile(file)
+      setImages((current) => [
+        { id: crypto.randomUUID(), url: processed.uri },
+        ...current,
+      ])
+      clearHandoff()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to process captured photo.')
+    } finally {
+      setProcessing(false)
+    }
   }
 
   const removeImage = (id: string) => {
@@ -46,21 +67,41 @@ export function DeviceCamera() {
     <>
       <p>
         Device Camera opens the native camera app so you can capture a photo there.
+        After the file returns, iTrac resize runs the same canvas / quality-loop / base64 path as{' '}
+        <code>processFile()</code>.
       </p>
 
       <section className="camera" aria-label="Device camera capture">
+        <label className="camera__option">
+          <input
+            type="checkbox"
+            checked={resizeEnabled}
+            onChange={(event) => setResizeEnabled(event.target.checked)}
+          />
+          iTrac resize after capture (1920×1080, quality loop to 2 MB, store as base64)
+        </label>
+
         <div className="camera__actions">
           <button
             type="button"
             className="button button--primary"
+            disabled={processing}
             onClick={() => {
               markHandoff('device')
               fileInputRef.current?.click()
             }}
           >
-            Capture Photo
+            {processing ? 'Processing…' : 'Capture Photo'}
           </button>
         </div>
+
+        {processing && (
+          <p className="memory__status">
+            Running iTrac resizeAndCompressUntilLimit — decode, canvas, toBlob loop, then base64.
+          </p>
+        )}
+
+        {error && <p className="app__error" role="alert">{error}</p>}
 
         <input
           ref={fileInputRef}
@@ -68,7 +109,9 @@ export function DeviceCamera() {
           type="file"
           accept="image/*"
           capture="environment"
-          onChange={onFileSelected}
+          onChange={(event) => {
+            void onFileSelected(event)
+          }}
         />
       </section>
 

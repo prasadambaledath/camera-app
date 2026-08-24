@@ -49,13 +49,6 @@ Change **one** thing per build. Use **Copy log** after each trial (device, heap,
 
 PWA / service worker is later. It is useful for installed vs browser-tab, but it is the wrong first variable on this small app.
 
-| Order | Add | Why |
-| --- | --- | --- |
-| 1 | **In-memory JPEG data URLs + thumbnails** | Closest to UDF/test photos in iTrac state — **this is in** |
-| 2 | iTrac-like resize (`canvas` / `toBlob` quality loop) | Capture-time memory spike |
-| 3 | PWA + service worker (installed vs tab) | How field techs often run iTrac |
-| 4 | IndexedDB drafts | Crash-restore path |
-| 5 | Analytics / session replay (optional) | Extra background cost |
 
 ## Run locally
 

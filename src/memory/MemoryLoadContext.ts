@@ -12,7 +12,9 @@ export type MemoryLoadContextValue = {
   dataUrls: string[]
   heap: HeapSample | null
   reloadNotice: ExperimentSnapshot | null
+  resizeEnabled: boolean
   setLevel: (level: LoadLevel) => void
+  setResizeEnabled: (enabled: boolean) => void
   markHandoff: (mode: CameraMode) => void
   clearHandoff: () => void
   dismissReloadNotice: () => void

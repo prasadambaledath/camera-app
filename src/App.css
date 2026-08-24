@@ -74,6 +74,18 @@
   line-height: 140%;
 }
 
+.camera__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.camera__option input {
+  margin-top: 3px;
+}
+
 .camera__actions {
   display: flex;
   flex-wrap: wrap;

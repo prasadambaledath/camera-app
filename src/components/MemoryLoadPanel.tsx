@@ -31,6 +31,7 @@ export function MemoryLoadPanel() {
             {reloadNotice.heapUsedMB != null
               ? ` at ${reloadNotice.heapUsedMB} MB heap.`
               : '.'}{' '}
+            iTrac resize was {reloadNotice.resizeEnabled ? 'on' : 'off'}.
             This is the iTrac-style kill path.
           </p>
           <button type="button" className="button" onClick={dismissReloadNotice}>
