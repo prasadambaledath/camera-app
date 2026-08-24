@@ -78,7 +78,7 @@ export function DeviceCamera() {
             checked={resizeEnabled}
             onChange={(event) => setResizeEnabled(event.target.checked)}
           />
-          iTrac resize after capture (1920×1080, quality loop to 2 MB, store as base64)
+          Resize photo after capture.
         </label>
 
         <div className="camera__actions">
