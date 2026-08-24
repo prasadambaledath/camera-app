@@ -7,8 +7,6 @@ A demo for comparing how photo capture behaves across devices and browsers — a
 
 iTrac ([itrac-client](https://github.com/convergint/itrac-client)) can reload the tab with “Unable to complete previous operation due to low memory” after native camera handoff. This app started as a light Vite/React page so we could isolate whether the **camera API** was broken, or whether Chrome was reclaiming a **heavy backgrounded tab**.
 
-The light app stays up. Next we add iTrac-like weight **one variable at a time**.
-
 ## Capture modes
 
 - **Device Camera** — Opens the phone’s native camera (`<input capture="environment">`). The browser tab is backgrounded while the OS camera runs. This is the iTrac kill path.
@@ -18,7 +16,7 @@ Captured photos stay in a session gallery only. Nothing is uploaded.
 
 ## Memory load (experiment 1)
 
-iTrac forms themselves are not unusually heavy. The risk is **photos as base64 in JS memory**, sitting in a still-alive SPA, then native Camera backgrounds that tab.
+The risk is **photos as base64 in JS memory**, sitting in a still-alive SPA, then native Camera backgrounds that tab.
 
 This panel models that — not 200MB empty typed arrays:
 
@@ -35,9 +33,9 @@ Load stays applied when you switch Device Camera ↔ In-App Camera. Chrome heap 
 
 If Chrome kills the tab during native handoff, the next load shows a **reload** banner (pending handoff + navigation type `reload`).
 
-## iTrac resize on Device Camera (experiment 2)
+## Resize on Device Camera (experiment 2)
 
-After the native camera returns a file, Device Camera can run the same post-capture path as iTrac `processFile()` / `resizeAndCompressUntilLimit`:
+After the native camera returns a file, Device Camera can run `processFile()` / `resizeAndCompressUntilLimit`:
 
 1. `createImageBitmap` downscale toward 1920×1080
 2. Draw once onto a canvas
@@ -45,9 +43,7 @@ After the native camera returns a file, Device Camera can run the same post-capt
 4. `arrayBuffer` → binary string → `btoa` data URL
 5. Keep the base64 string in gallery state (`format64` / `blobValue` style)
 
-The checkbox **iTrac resize after capture** defaults **on**. Turn it off to keep the raw `File` and preview it with `URL.createObjectURL` (no canvas, no quality loop, no base64).
-
-In-App Camera does **not** use this path. In iTrac, In-App Camera still calls `processFile` after `toBlob` — this sample leaves that off so you can contrast foreground capture vs native handoff + resize.
+The checkbox **resize after capture** defaults **on**. Turn it off to keep the raw `File` and preview it with `URL.createObjectURL` (no canvas, no quality loop, no base64).
 
 Pending-handoff stays set until resize finishes, so a kill during `processFile` still shows the reload banner.
 
@@ -67,20 +63,7 @@ That isolates a main root cause: **post-capture resize / compress / base64**, no
 
 If (2) survives and (3) reloads after the photo returns, the capture-time resize spike is involved. If the tab dies while still in the OS camera, that is the backgrounded-tab path.
 
-Change **one** thing per trial. Use **Copy log** (device, heap, mode, load, iTrac-resize Y/N, PWA Y/N, reload Y/N).
-
-## What we are not adding yet
-
-PWA / service worker is later. It is useful for installed vs browser-tab, but it is the wrong first variable on this small app.
-
-| Order | Add | Why |
-| --- | --- | --- |
-| 1 | **In-memory JPEG data URLs + thumbnails** | Closest to UDF/test photos in iTrac state — **this is in** |
-| 2 | **iTrac-like resize (`canvas` / `toBlob` quality loop)** | Capture-time memory spike — **this is in** (Device Camera toggle) |
-| 3 | PWA + service worker (installed vs tab) | How field techs often run iTrac |
-| 4 | IndexedDB drafts | Crash-restore path |
-| 5 | Analytics / session replay (optional) | Extra background cost |
-
+Use **Copy log** (device, heap, mode, load, resize Y/N, PWA Y/N, reload Y/N).
 
 ## Run locally
 
