@@ -25,7 +25,7 @@ export function MemoryLoadProvider({ children }: { children: ReactNode }) {
   const [stats, setStats] = useState<BallastStats | null>(null)
   const [heap, setHeap] = useState<HeapSample | null>(() => readHeap())
   const [reloadNotice, setReloadNotice] = useState<ExperimentSnapshot | null>(() => wasReloadedAfterHandoff())
-  const [resizeEnabled, setResizeEnabled] = useState(true)
+  const [resizeEnabled, setResizeEnabled] = useState(false)
 
   useEffect(() => {
     const timer = window.setInterval(() => {
