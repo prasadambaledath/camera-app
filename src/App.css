@@ -7,7 +7,7 @@
 .app__main {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 18px;
 }
 
 .app__error {
@@ -76,8 +76,8 @@
 
 .camera__option {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
   font-size: 14px;
   color: var(--text-h);
 }

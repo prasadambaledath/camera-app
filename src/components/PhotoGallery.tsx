@@ -17,7 +17,7 @@ export function PhotoGallery({ images, onRemove }: PhotoGalleryProps) {
       </div>
 
       {images.length === 0 ? (
-        <p className="gallery__empty">No photos yet. Capture or take one to see it here.</p>
+        <p className="gallery__empty">No photos yet. Capture one to see it here.</p>
       ) : (
         <ul className="gallery__grid">
           {images.map((image) => (
