@@ -22,13 +22,19 @@ export function Header() {
           end
           className={({ isActive }) => `header__link${isActive ? ' header__link--active' : ''}`}
         >
-          Device Camera
+          Home
+        </NavLink>
+        <NavLink
+          to="/device"
+          className={({ isActive }) => `header__link${isActive ? ' header__link--active' : ''}`}
+        >
+          Device Cam
         </NavLink>
         <NavLink
           to="/in-app"
           className={({ isActive }) => `header__link${isActive ? ' header__link--active' : ''}`}
         >
-          In-App Camera
+          In-App Cam
         </NavLink>
       </nav>
     </header>

@@ -1,10 +1,17 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Header } from './components/Header'
 import { MemoryLoadPanel } from './components/MemoryLoadPanel'
 import { MemoryLoadProvider } from './memory/MemoryLoadProvider'
 import { DeviceCamera } from './pages/DeviceCamera'
+import { Home } from './pages/Home'
 import { InAppCamera } from './pages/InAppCamera'
 import './App.css'
+
+function ExperimentPanel() {
+  const { pathname } = useLocation()
+  if (pathname === '/') return null
+  return <MemoryLoadPanel />
+}
 
 function App() {
   return (
@@ -13,9 +20,10 @@ function App() {
         <div className="app">
           <Header />
           <main className="app__main">
-            <MemoryLoadPanel />
+            <ExperimentPanel />
             <Routes>
-              <Route path="/" element={<DeviceCamera />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/device" element={<DeviceCamera />} />
               <Route path="/in-app" element={<InAppCamera />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

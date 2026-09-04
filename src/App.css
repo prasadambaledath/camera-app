@@ -100,6 +100,13 @@
   display: none;
 }
 
+.home__preview {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
 .button {
   appearance: none;
   border: 1px solid var(--border);
