@@ -12,7 +12,7 @@ export function PhotoGallery({ images, onRemove }: PhotoGalleryProps) {
   return (
     <section className="gallery" aria-label="Captured photos">
       <div className="gallery__heading">
-        <h2>Photos</h2>
+        <strong>Photos</strong>
         <span>{images.length} captured</span>
       </div>
 

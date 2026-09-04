@@ -43,7 +43,7 @@ After the native camera returns a file, Device Camera can run `processFile()` / 
 4. `arrayBuffer` → binary string → `btoa` data URL
 5. Keep the base64 string in gallery state (`format64` / `blobValue` style)
 
-The checkbox **resize after capture** defaults **on**. Turn it off to keep the raw `File` and preview it with `URL.createObjectURL` (no canvas, no quality loop, no base64).
+The checkbox **Resize photo after capture** defaults **off**. Leave it off to keep the raw `File` and preview it with `URL.createObjectURL` (no canvas, no quality loop, no base64). Turn it on to run the iTrac resize path.
 
 Pending-handoff stays set until resize finishes, so a kill during `processFile` still shows the reload banner.
 
