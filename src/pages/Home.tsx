@@ -23,13 +23,14 @@ export function Home() {
 
   return (
     <section className="camera" aria-label="Capture photo">
+      <p>Just capture a photo from device camera and it will be previewed here.</p>
       <div className="camera__actions">
         <button
           type="button"
           className="button button--primary"
           onClick={() => fileInputRef.current?.click()}
         >
-          Capture Photo
+          Capture photo
         </button>
       </div>
 
